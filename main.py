@@ -17,7 +17,7 @@ def load_existing_novel(filename):
 def main():
     existing_chapters = load_existing_novel("novel_output.txt")
     chapter_count = len(existing_chapters)
-    max_chapters = 10
+    max_chapters = 10000
     cnt = 30
     messages = [{"role": "system", "content": system_prompt}]
     messages.append({"role": "user", "content": "请开始创作小说的第一章。"})
@@ -34,7 +34,8 @@ def main():
             f.write("\n\n" + "=" * 40 + "\n")
             f.write(content + "\n")
             f.write("=" * 40 + "\n\n")
-    while chapter_count < max_chapters:
+    cnt2 = 5
+    while chapter_count < max_chapters and cnt2 != 0:
         try:
             response = client.chat.completions.create(
                 model="deepseek-reasoner",
@@ -49,6 +50,7 @@ def main():
                 messages.append({"role": "user", "content": "请继续创作下一章，保持故事连贯性，注意章节标题格式，正文字数必须尽可能多。"})
                 chapter_count += 1
                 print(f"当前进度: {chapter_count}/{max_chapters}")
+                cnt2 -= 1
         except Exception as e:
             print(f"异常重试: {str(e)}")
     print("一轮over")
