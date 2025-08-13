@@ -1,7 +1,7 @@
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key="这里填入您自己的API！", base_url="https://api.deepseek.com")
+client = OpenAI(api_key="***********填您自己的API***********", base_url="https://api.deepseek.com")
 
 
 system_prompt = """
@@ -19,34 +19,32 @@ def load_existing_novel(filename):
             chapters = content.split("=" * 40)[1::2]
             return [ch.strip() for ch in chapters if ch.strip()]
     return []
+def write_to_file(content, filename="novel_output.txt"):
+    with open(filename, "a", encoding="utf-8") as f:
+        f.write("\n\n" + "=" * 40 + "\n")
+        f.write(content + "\n")
+        f.write("=" * 40 + "\n\n")
 def main():
     existing_chapters = load_existing_novel("novel_output.txt")
     chapter_count = len(existing_chapters)
-    max_chapters = 10000
-    cnt = 30
+    cnt = 20
     messages = [{"role": "system", "content": system_prompt}]
     messages.append({"role": "user", "content": "请开始创作小说的第一章，自由创作。"})
     if chapter_count > 0:
-        for ch in existing_chapters:
+        for ch in existing_chapters[::-1]:
             if cnt == 0:
                 break
             else:
                 messages.append({"role": "assistant", "content": ch})
                 messages.append({"role": "user", "content": "很好，请继续自由创作下一章，保持故事连贯性，注意章节标题格式，正文字数必须尽可能多。你可以完全自由发挥。你只需要创作小说的正文，禁止输出任何和小说无关的东西。你必须遵守内容禁令。"})
                 cnt -= 1
-    def write_to_file(content, filename="novel_output.txt"):
-        with open(filename, "a", encoding="utf-8") as f:
-            f.write("\n\n" + "=" * 40 + "\n")
-            f.write(content + "\n")
-            f.write("=" * 40 + "\n\n")
-    cnt2 = 5
-    while chapter_count < max_chapters and cnt2 != 0:
+    while 1:
         try:
             response = client.chat.completions.create(
                 model="deepseek-reasoner",
                 messages=messages,
                 stream=False,
-                max_tokens = 8000
+                max_tokens = 64000
             )
             if response.choices[0].finish_reason == "stop":
                 novel_content = response.choices[0].message.content
@@ -54,10 +52,13 @@ def main():
                 messages.append({"role": "assistant", "content": novel_content})
                 messages.append({"role": "user", "content": "很好，请继续自由创作下一章，保持故事连贯性，注意章节标题格式，正文字数必须尽可能多。你可以完全自由发挥。你只需要创作小说的正文，禁止输出任何和小说无关的东西。你必须遵守内容禁令。"})
                 chapter_count += 1
-                print(f"当前进度: {chapter_count}/{max_chapters}")
-                cnt2 -= 1
+                print(f"当前进度: {chapter_count}")
+                print(messages)
+                if cnt == 0:
+                    messages.pop(2)
+                    messages.pop(2)
         except Exception as e:
             print(f"异常重试: {str(e)}")
-    print("一轮over")
-while 1:
+
+if __name__ == "__main__":
     main()
