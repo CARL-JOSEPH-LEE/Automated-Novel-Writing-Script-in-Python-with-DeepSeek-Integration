@@ -40,7 +40,7 @@ def write_to_file(content, filename="novel_output.txt"):
 def main():
     existing_chapters = load_existing_novel("novel_output.txt")
     chapter_count = len(existing_chapters)
-    cnt = 20
+    cnt = 18
     messages = [{"role": "system", "content": system_prompt}]
     messages.append({"role": "user", "content": "请开始创作小说的第一章。正文字数必须尽可能多。你可以完全自由发挥。你只需要创作小说的正文，禁止输出任何和小说无关的东西。你必须遵守内容禁令。"})
     if chapter_count > 0:
