@@ -13,7 +13,8 @@ AI真的强大,我喜欢AI,我知道AI未来会更厉害,AI这个工具迟早能
 """
 import os
 from openai import OpenAI
-
+import datetime
+import time
 client = OpenAI(api_key="填你的API", base_url="https://api.deepseek.com")
 
 
@@ -37,21 +38,43 @@ def write_to_file(content, filename="novel_output.txt"):
         f.write("\n\n" + "=" * 40 + "\n")
         f.write(content + "\n")
         f.write("=" * 40 + "\n\n")
+def check_time():
+    """检查当前时间是否在北京时间 00:30 至 08:30 之间"""
+    # 获取当前 UTC 时间
+    utc_now = datetime.datetime.utcnow()
+
+    # 转换为北京时间（UTC+8）
+    beijing_now = utc_now + datetime.timedelta(hours=8)
+
+    # 构造时间范围
+    start_time = beijing_now.replace(hour=0, minute=30, second=0, microsecond=0)
+    end_time = beijing_now.replace(hour=8, minute=30, second=0, microsecond=0)
+
+    # 检查是否在允许的时间段
+    if start_time <= beijing_now <= end_time:
+        return True
+    else:
+        return False
 def main():
     existing_chapters = load_existing_novel("novel_output.txt")
     chapter_count = len(existing_chapters)
     cnt = 16
+    tempcnt = cnt
     messages = [{"role": "system", "content": system_prompt}]
     messages.append({"role": "user", "content": "请开始创作小说的第一章。正文字数必须尽可能多。你可以完全自由发挥。你只需要创作小说的正文，禁止输出任何和小说无关的东西。你必须遵守内容禁令。"})
     if chapter_count > 0:
-        for ch in existing_chapters[::-1]:
-            if cnt == 0:
+        for ch in existing_chapters[-cnt:]:
+            if tempcnt == 0:
                 break
             else:
                 messages.append({"role": "assistant", "content": ch})
                 messages.append({"role": "user", "content": "很好，请继续自由创作下一章，保持故事连贯性，注意章节标题格式，正文字数必须尽可能多。你可以完全自由发挥。你只需要创作小说的正文，禁止输出任何和小说无关的东西。你必须遵守内容禁令。"})
-                cnt -= 1
+                tempcnt -= 1
     while 1:
+        if not check_time():
+            time.sleep(2)
+            print(datetime.datetime.utcnow()+datetime.timedelta(hours=8))
+            continue
         try:
             response = client.chat.completions.create(
                 model="deepseek-reasoner",
@@ -66,7 +89,7 @@ def main():
                 messages.append({"role": "user", "content": "很好，请继续自由创作下一章，保持故事连贯性，注意章节标题格式，正文字数必须尽可能多。你可以完全自由发挥。你只需要创作小说的正文，禁止输出任何和小说无关的东西。你必须遵守内容禁令。"})
                 chapter_count += 1
                 print(f"当前进度: {chapter_count}")
-                if cnt == 0:
+                if chapter_count > cnt:
                     messages.pop(2)
                     messages.pop(2)
         except Exception as e:
