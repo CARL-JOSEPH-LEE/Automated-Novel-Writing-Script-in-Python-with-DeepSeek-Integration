@@ -31,18 +31,10 @@ def write_to_file(content, filename="novel_output.txt"):
         f.write(content + "\n")
         f.write("=" * 40 + "\n\n")
 def check_time():
-    """检查当前时间是否在北京时间 00:30 至 08:30 之间"""
-    # 获取当前 UTC 时间
     utc_now = datetime.datetime.utcnow()
-
-    # 转换为北京时间（UTC+8）
     beijing_now = utc_now + datetime.timedelta(hours=8)
-
-    # 构造时间范围
     start_time = beijing_now.replace(hour=0, minute=30, second=0, microsecond=0)
     end_time = beijing_now.replace(hour=8, minute=30, second=0, microsecond=0)
-
-    # 检查是否在允许的时间段
     if start_time <= beijing_now <= end_time:
         return True
     else:
@@ -64,8 +56,8 @@ start_prompt = """
 """
 
 def main():
-    head = 5
-    tail = 5
+    head = 3
+    tail = 8
     existing_chapters = load_existing_novel("novel_output.txt")
     existing_chapters2 = deepcopy(existing_chapters)
     chapter_count = len(existing_chapters)
@@ -95,7 +87,6 @@ def main():
             time.sleep(5)
             continue
         try:
-            print(messages)
             response = client.chat.completions.create(
                 model="deepseek-reasoner",
                 messages=messages,
