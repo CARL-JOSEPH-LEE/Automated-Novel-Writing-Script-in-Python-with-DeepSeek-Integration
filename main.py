@@ -64,32 +64,46 @@ start_prompt = """
 """
 
 def main():
+    head = 5
+    tail = 5
     existing_chapters = load_existing_novel("novel_output.txt")
+    existing_chapters2 = deepcopy(existing_chapters)
     chapter_count = len(existing_chapters)
-    cnt = 12
-    tempcnt = cnt
+    chapter_count2 = len(existing_chapters2)
+    cnt = head+tail
     messages = [{"role": "system", "content": system_prompt}]
     messages.append({"role": "user", "content": start_prompt})
     if chapter_count > 0:
-        for ch in existing_chapters[-cnt:]:
-            if tempcnt == 0:
+        for ch in existing_chapters:
+            if head == 0:
+                break
+            else:
+                existing_chapters2.pop(0)
+                messages.append({"role": "assistant", "content": ch})
+                messages.append({"role": "user", "content": chat_prompt})
+                head -= 1
+    if chapter_count2 > 0:
+        for ch in existing_chapters2[-tail:]:
+            if tail == 0:
                 break
             else:
                 messages.append({"role": "assistant", "content": ch})
                 messages.append({"role": "user", "content": chat_prompt})
-                tempcnt -= 1
+                tail -= 1
     while 1:
         if not check_time():
             time.sleep(5)
             continue
         try:
+            print(messages)
             response = client.chat.completions.create(
                 model="deepseek-reasoner",
                 messages=messages,
                 stream=False,
                 max_tokens = 64000,
-                temperature= 1.5
+                temperature= 1.6
             )
+
             if response.choices[0].finish_reason == "stop":
                 novel_content = response.choices[0].message.content
                 write_to_file(novel_content)
@@ -103,9 +117,6 @@ def main():
         except Exception as e:
             print(f"异常重试: {str(e)}")
             time.sleep(1)
-
-
-
 
 if __name__ == "__main__":
     main()
