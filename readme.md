@@ -5,27 +5,14 @@
 ## Table of Contents
 
 -   [Overview](#overview)
--   [Features](#features)
--   [Usage](#usage)
--   [Installation](#installation)
 -   [License](#license)
 -   [Acknowledgements](#acknowledgements)
 
 ## Overview
 
-这是一个python写的自动生成小说脚本，您可以自己替换系统提示词，初始提示词，每次的提示词，以及模型。默认是DEEPSEEK。
-
-## Features
-
-没有特色捏
-
-## Usage
-
-自动写小说捏
-
-## Installation
-
-自己pip捏
+使用head+tail动态滑窗逻辑的自动化API小说生成程序,功能完善,码风优美,请自己去看main.py
+提示词是开源版本,我自己用的不开源,涉及商业利益,见谅
+感谢各位的认可.
 
 ## License
 
