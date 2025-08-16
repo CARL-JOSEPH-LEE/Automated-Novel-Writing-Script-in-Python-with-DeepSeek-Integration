@@ -57,8 +57,8 @@ start_prompt = """
 """
 
 def main():
-    head = 3 #头部
-    tail = 20 #尾部,滑窗逻辑
+    head = 0 #头部,必须是非负整数
+    tail = 30 #尾部,滑窗逻辑,必须是非负整数
     temptail = tail
     while 1:
         #初始化逻辑
@@ -69,7 +69,10 @@ def main():
         cnt = head+temptail
         #初始化messages
         messages = [{"role": "system", "content": system_prompt}]
-        messages.append({"role": "user", "content": start_prompt})
+        if head == 0 and chapter_count > cnt:
+            messages.append({"role": "user", "content": chat_prompt})
+        else:
+            messages.append({"role": "user", "content": start_prompt})
         #头信息构造逻辑,固定
         head1 = head
         if chapter_count > 0:
@@ -97,6 +100,7 @@ def main():
             continue
 
         try:
+            print(messages[1],cnt)
             #发送请求
             print(f"tail={temptail}")
             response = client.chat.completions.create(
@@ -105,7 +109,7 @@ def main():
                 stream=False,                     #流式传输
                 max_tokens = 64000,               #最大tokens,上限64K
                 temperature= 1.6,                 #温度,控制输出的随机性,建议1.5
-                presence_penalty = 1,             #控制重复内容的出现，值范围 [-2.0, 2.0],正数鼓励新词出现
+                presence_penalty = 0.5,             #控制重复内容的出现，值范围 [-2.0, 2.0],正数鼓励新词出现
                 frequency_penalty = 0.5           #减少重复单词或短语的频率，值范围 [-2.0, 2.0],默认0,正数减少高频词重复
             )
             #写逻辑&维护逻辑&重更新tail
